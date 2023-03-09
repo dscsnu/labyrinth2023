@@ -25,7 +25,7 @@ class ClueBeacon extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: kButtonGradient,
+          gradient: kTestGradient,
           shape: BoxShape.circle,
         ),
         child: const CircleAvatar(
@@ -37,7 +37,7 @@ class ClueBeacon extends StatelessWidget {
 
     return homeProvider.selectedClue == clue
         ? AvatarGlow(
-            glowColor: kSecondaryOrange,
+            glowColor: kSecondary,
             endRadius: 60.0,
             child: beaconWidget,
           )

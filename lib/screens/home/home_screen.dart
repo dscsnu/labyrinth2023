@@ -1,27 +1,23 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:labyrinth/global/constants/colors.dart';
+import 'package:labyrinth/global/constants/values.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../global/constants/colors.dart';
-import '../../global/constants/strings.dart';
-import '../../global/constants/values.dart';
+// import 'package:qr_code_scanner/qr_code_scanner.dart';
+
 import '../../global/size_helper.dart';
 import '../../global/widgets/circular_icon_button.dart';
 import '../../global/widgets/popup_alert.dart';
-import '../../global/widgets/rounded_button.dart';
 import '../../providers/connectivity_provider.dart';
 import '../../providers/home_provider.dart';
-import '../../services/beacon_service.dart';
 import '../no_internet/no_internet_screen.dart';
 import 'widgets/campus_map.dart';
 import 'widgets/clue_display.dart';
-import 'widgets/progress_details.dart';
 import 'widgets/rule_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,15 +29,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final qrKey = GlobalKey(debugLabel: "QR");
-  QRViewController? controller;
-  Barcode? barcode;
+  // QRViewController? controller;
+  // Barcode? barcode;
   late HomeProvider homeProvider;
   bool qrVisible = false, flash = false, isChecking = false;
   late ConfettiController _controllerCenter;
+  
+  DateTime displayTime = DateTime.now();
+  Timer? countdown;
 
   @override
   void dispose() {
-    controller?.dispose();
+    // controller?.dispose();
     _controllerCenter.dispose();
     super.dispose();
   }
@@ -50,14 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void reassemble() {
     super.reassemble();
 
-    try {
-      if (Platform.isAndroid) {
-        controller?.pauseCamera();
-      }
-      controller?.resumeCamera();
-    } on Exception catch (e) {
-      debugPrint(e.toString());
-    }
+  //   try {
+  //     if (Platform.isAndroid) {
+  //       controller?.pauseCamera();
+  //     }
+  //     controller?.resumeCamera();
+  //   } on Exception catch (e) {
+  //     debugPrint(e.toString());
+  //   }
   }
 
   @override
@@ -65,7 +64,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 10));
+        
+    countdown = Timer.periodic(
+      const Duration(
+        seconds: 1,
+      ),
+      (timer) {
+        setState(
+          () {
+            displayTime = DateTime.now();
+          },
+        );
+      },
+    );
   }
+  
+  format(Duration d) =>
+      d.toString().split('.').first.padLeft(8, "0").replaceAll(":", " : ");
 
   @override
   Widget build(BuildContext context) {
@@ -88,82 +103,217 @@ class _HomeScreenState extends State<HomeScreen> {
                   alignment: Alignment.center,
                   children: [
                     const CampusMap(),
-                    const Align(
-                      alignment: Alignment.topCenter,
-                      child: ProgressDetails(),
-                    ),
-                    Positioned(
-                      child: Row(
-                        children: [
-                          CircularIconButton(
-                            icon: Icons.refresh,
-                            size: 28,
-                            onClick: () {
-                              homeProvider.refreshHomeScreen();
-                            },
-                          ),
-                          SizedBox(width: SizeHelper(context).width * 0.025),
-                          RoundedButton(
-                            text: "SCAN QR (" +
-                                homeProvider.scansLeft.toString() +
-                                ")",
-                            child: Image.asset('assets/images/scan_logo.png'),
-                            onClick: () {
-                              if (!_eventStarted) {
-                                showDialog(
+                    Align(
+                      // top: SizeHelper(context).height * 0.02,
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // TODO: Ask Keshav for refresh button
+                            // CircularIconButton(
+                            //   icon: Icons.refresh,
+                            //   size: 28,
+                            //   onClick: () {
+                            //     homeProvider.refreshHomeScreen();
+                            //   },
+                            // ),
+                            // SizedBox(width: SizeHelper(context).width * 0.025),
+                            GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
                                   context: context,
-                                  builder: (context) => PopupAlert(
-                                    bodyText: 'The event is not in progress.',
-                                    onConfirm: () => Navigator.pop(context),
-                                    cancelOrNo: false,
-                                    buttonText: 'Okay',
+                                  builder: (context) => BackdropFilter(
+                                    child: const RuleSheet(),
+                                    filter:
+                                        ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                                   ),
                                 );
-                              } else if (homeProvider.scansLeft == 0) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => PopupAlert(
-                                    bodyText:
-                                        "You've exhausted all your scans.",
-                                    onConfirm: () => Navigator.pop(context),
-                                    cancelOrNo: false,
-                                    buttonText: 'Okay',
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: kBackgroundColor,
+                                  borderRadius: BorderRadius.circular(kRoundedCornerValue),
+                                  border: Border.all(
+                                    color: kPrimary.withOpacity(0.6),
+                                    width: 1.0,
                                   ),
-                                );
-                              } else {
-                                setState(
-                                  () {
-                                    qrVisible = true;
-                                  },
-                                );
-                              }
-                            },
-                          ),
-                          SizedBox(width: SizeHelper(context).width * 0.025),
-                          CircularIconButton(
-                            icon: Icons.help,
-                            size: 28,
-                            onClick: () {
-                              showModalBottomSheet(
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                context: context,
-                                builder: (context) => BackdropFilter(
-                                  child: const RuleSheet(),
-                                  filter:
-                                      ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                                 ),
-                              );
-                            },
-                          ),
-                        ],
+                                child: Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.help,
+                                      size: 28,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      "Rules",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      bottom: SizeHelper(context).height * 0.05,
                     ),
                     Positioned(
-                      child: const ClueDisplay(),
-                      top: SizeHelper(context).height * 0.09,
+                      bottom: SizeHelper(context).height * 0.2,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (!_eventStarted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => PopupAlert(
+                                        bodyText: 'The event is not in progress.',
+                                        onConfirm: () => Navigator.pop(context),
+                                        cancelOrNo: false,
+                                        buttonText: 'Okay',
+                                      ),
+                                    );
+                                  } else if (homeProvider.scansLeft == 0) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => PopupAlert(
+                                        bodyText:
+                                            "You've exhausted all your scans.",
+                                        onConfirm: () => Navigator.pop(context),
+                                        cancelOrNo: false,
+                                        buttonText: 'Okay',
+                                      ),
+                                    );
+                                  } else {
+                                    setState(
+                                      () {
+                                        qrVisible = true;
+                                      },
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                  child: Text(
+                                    "Scan QR (" + homeProvider.scansLeft.toString() + ")",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                decoration: BoxDecoration(
+                                  color: kBackgroundColor,
+                                  borderRadius: BorderRadius.circular(kRoundedCornerValue),
+                                  border: Border.all(
+                                    color: kPrimary.withOpacity(0.6),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.add_task,
+                                      color: Colors.white,
+                                      size: 20.0,
+                                    ),
+                                    const SizedBox(
+                                      width: 6,
+                                    ),
+                                    Text(
+                                      '${homeProvider.cluesCollected.length} / 10',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                decoration: BoxDecoration(
+                                  color: kBackgroundColor,
+                                  borderRadius: BorderRadius.circular(kRoundedCornerValue),
+                                  border: Border.all(
+                                    color: kPrimary.withOpacity(0.6),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.timer,
+                                      color: Colors.white,
+                                      size: 20.0,
+                                    ),
+                                    const SizedBox(
+                                      width: 6,
+                                    ),
+                                    Text(
+                                      (displayTime.compareTo(homeProvider.startTime) < 0)
+                                          ? " - " +
+                                              format(homeProvider.startTime
+                                                  .difference(displayTime))
+                                          : (displayTime.compareTo(homeProvider.endTime) < 0)
+                                              ? format(
+                                                  homeProvider.endTime.difference(displayTime))
+                                              : "00:00:00",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15.0,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),  
+                    
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: DraggableScrollableSheet(
+                        expand: false,
+                        initialChildSize: 0.2,
+                        minChildSize: 0.2,
+                        maxChildSize: 0.8,
+                        snap: true,
+                        snapSizes: const [0.2, 0.8],
+                        builder: (context, scrollController) => ClueDisplay(
+                          scrollController: scrollController,
+                        ),
+                      ),
                     ),
+                                      
                     qrVisible
                         ? _eventStarted
                             ? qrView(context)
@@ -179,14 +329,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? Icons.flash_on
                                       : Icons.flash_off,
                                   onClick: () async {
-                                    controller?.toggleFlash();
-                                    var temp =
-                                        await controller?.getFlashStatus();
-                                    setState(
-                                      () {
-                                        flash = temp!;
-                                      },
-                                    );
+                                    // controller?.toggleFlash();
+                                    // var temp =
+                                    //     await controller?.getFlashStatus();
+                                    // setState(
+                                    //   () {
+                                    //     flash = temp!;
+                                    //   },
+                                    // );
                                   },
                                 ),
                               )
@@ -248,76 +398,76 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget qrView(BuildContext context) => Container(
         color: const Color(0x000223bf),
-        child: QRView(
-          key: qrKey,
-          overlay: QrScannerOverlayShape(
-            borderColor: kPrimaryOrange,
-            borderRadius: kRoundedCornerValue,
-            borderWidth: 10,
-          ),
-          onQRViewCreated: (QRViewController controller) {
-            setState(
-              () {
-                this.controller = controller;
-              },
-            );
-            controller.scannedDataStream.listen(
-              (barcode) {
-                this.barcode = barcode;
-                if (qrVisible) {
-                  setState(
-                    () {
-                      qrVisible = false;
-                    },
-                  );
-                  checkCode();
-                }
-              },
-            );
-          },
-        ),
+        // child: QRView(
+        //   key: qrKey,
+        //   overlay: QrScannerOverlayShape(
+        //     borderColor: kPrimaryOrange,
+        //     borderRadius: kRoundedCornerValue,
+        //     borderWidth: 10,
+        //   ),
+        //   onQRViewCreated: (QRViewController controller) {
+        //     setState(
+        //       () {
+        //         this.controller = controller;
+        //       },
+        //     );
+        //     controller.scannedDataStream.listen(
+        //       (barcode) {
+        //         this.barcode = barcode;
+        //         if (qrVisible) {
+        //           setState(
+        //             () {
+        //               qrVisible = false;
+        //             },
+        //           );
+        //           checkCode();
+        //         }
+        //       },
+        //     );
+        //   },
+        // ),
       );
 
-  Future<void> checkCode() async {
-    String toCheck;
-    try {
-      final uri = Uri.parse(barcode?.code ?? '');
-      toCheck = uri.queryParameters['__lr_key'] ?? '';
-    } catch (e) {
-      toCheck = '';
-    }
-    var result = await BeaconService.scanIsValid(toCheck);
-    showDialog(
-      context: context,
-      builder: (context) => PopupAlert(
-        bodyText: 'Let\'s see if you got it right :)',
-        onConfirm: () async {
-          Navigator.pop(context);
-          homeProvider.refreshHomeScreen();
-          if (result) {
-            showDialog(
-              context: context,
-              builder: (context) => PopupAlert(
-                bodyText: 'Good job! You got this one',
-                onConfirm: () async {
-                  Navigator.pop(context);
-                },
-                buttonText: 'Proceed',
-                cancelOrNo: false,
-              ),
-            );
-            setState(
-              () {
-                qrVisible = false;
-              },
-            );
-          } else {
-            await launch(rickrollUrl);
-          }
-        },
-        buttonText: 'Check',
-        cancelOrNo: false,
-      ),
-    );
-  }
+  // Future<void> checkCode() async {
+  //   String toCheck;
+  //   try {
+  //     final uri = Uri.parse(barcode?.code ?? '');
+  //     toCheck = uri.queryParameters['__lr_key'] ?? '';
+  //   } catch (e) {
+  //     toCheck = '';
+  //   }
+  //   var result = await BeaconService.scanIsValid(toCheck);
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => PopupAlert(
+  //       bodyText: 'Let\'s see if you got it right :)',
+  //       onConfirm: () async {
+  //         Navigator.pop(context);
+  //         homeProvider.refreshHomeScreen();
+  //         if (result) {
+  //           showDialog(
+  //             context: context,
+  //             builder: (context) => PopupAlert(
+  //               bodyText: 'Good job! You got this one',
+  //               onConfirm: () async {
+  //                 Navigator.pop(context);
+  //               },
+  //               buttonText: 'Proceed',
+  //               cancelOrNo: false,
+  //             ),
+  //           );
+  //           setState(
+  //             () {
+  //               qrVisible = false;
+  //             },
+  //           );
+  //         } else {
+  //           await launch(rickrollUrl);
+  //         }
+  //       },
+  //       buttonText: 'Check',
+  //       cancelOrNo: false,
+  //     ),
+  //   );
+  // }
 }

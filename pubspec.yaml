@@ -19,13 +19,13 @@ dependencies:
   http: ^0.13.4
   liquid_swipe: ^2.1.1
   provider: ^6.0.2
-  qr_code_scanner: ^0.7.0
+  # qr_code_scanner: ^0.7.0
   rounded_loading_button: ^2.0.9
   shared_preferences: ^2.0.13
   simple_gradient_text: ^1.2.2
   url_launcher: ^6.0.20
   confetti: ^0.6.0
-
+  
 dev_dependencies:
   flutter_launcher_icons: ^0.9.2
   flutter_lints: ^1.0.0
@@ -46,3 +46,12 @@ flutter:
 
   assets:
     - assets/images/
+  
+  fonts:
+    - family: NeueMachina
+      fonts:
+        - asset: assets/fonts/NeueMachina-Regular.otf
+        - asset: assets/fonts/NeueMachina-Light.otf
+          weight: 300
+        - asset: assets/fonts/NeueMachina-Ultrabold.otf
+          weight: 900

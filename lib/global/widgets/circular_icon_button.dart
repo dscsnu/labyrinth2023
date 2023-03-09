@@ -23,32 +23,19 @@ class CircularIconButton extends StatelessWidget {
       child: CircleAvatar(
         backgroundColor: Colors.transparent,
         radius: size ?? 20.0,
-        child: ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (Rect bounds) {
-            return const LinearGradient(
-              colors: <Color>[
-                kGradientColor1,
-                kGradientColor2,
-              ],
-              tileMode: TileMode.repeated,
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ).createShader(bounds);
-          },
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(kRoundedCornerValue),
-              border: Border.all(
-                width: (withBorder ?? true) ? 2 : 0,
-              ),
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(kRoundedCornerValue),
+            border: Border.all(
+              width: (withBorder ?? true) ? 2 : 0,
+              color: kPrimary
             ),
-            child: Icon(
-              icon ?? Icons.close,
-              //color: kPrimaryOrange,
-              size: 25,
-            ),
+          ),
+          child: Icon(
+            icon ?? Icons.close,
+            color: kPrimary,
+            size: 25,
           ),
         ),
       ),

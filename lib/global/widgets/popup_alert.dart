@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../global/constants/colors.dart';
-import '../constants/colors.dart';
 import 'cancel_button.dart';
 import 'rounded_button.dart';
 
@@ -29,8 +27,11 @@ class PopupAlert extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30.0),
-          gradient: kPurpleGradient,
-          border: Border.all(color: kPrimaryOrange),
+          border: Border.all(
+            width: 1,
+            color: Colors.black,
+          ),
+          color: Colors.white,
         ),
         height: 210,
         child: Column(
@@ -38,7 +39,9 @@ class PopupAlert extends StatelessWidget {
           children: [
             Text(
               bodyText,
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
