@@ -37,15 +37,17 @@ class LabyrinthApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           textSelectionTheme: const TextSelectionThemeData(
-            cursorColor: kSecondaryOrange,
-            selectionColor: kSecondaryOrange,
-            selectionHandleColor: kSecondaryOrange,
+            // cursorColor: kSecondary,
+            // selectionColor: kSecondary,
+            // selectionHandleColor: kSecondary,
           ),
           colorScheme:
-              Theme.of(context).colorScheme.copyWith(secondary: kPrimaryOrange),
+              Theme.of(context).colorScheme.copyWith(secondary: kPrimary),
           iconTheme: const IconThemeData(color: kIconColor),
           scaffoldBackgroundColor: kBackgroundColor,
-          textTheme: GoogleFonts.lexendTextTheme().apply(bodyColor: kTextColor),
+          textTheme: GoogleFonts.ralewayTextTheme(
+            Theme.of(context).textTheme,
+          ),
         ),
         home: const BaseScreen(),
       ),
