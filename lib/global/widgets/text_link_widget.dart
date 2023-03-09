@@ -17,13 +17,10 @@ class TextLinkWidget extends StatelessWidget {
     return GestureDetector(
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.w600,
-          fontSize: 15.4,
-          foreground: Paint()
-            ..shader = kButtonGradient.createShader(
-              const Rect.fromLTWH(0.0, 0.0, 200.0, 100.0),
-            ),
+          fontSize: 12,
+          color: Colors.white,
         ),
         textAlign: TextAlign.start,
       ),

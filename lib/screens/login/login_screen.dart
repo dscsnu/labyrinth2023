@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:labyrinth/screens/registration/widgets/login_prompt.dart';
 import 'package:provider/provider.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
@@ -41,127 +42,115 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: kBackgroundColor,
         body: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: SizeHelper(context).height * 0.1,
-              ),
-              const Text(
-                "Login",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 35,
-                ),
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              const Text(
-                "Login with your team name and password",
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(
-                height: SizeHelper(context).height * 0.05,
-              ),
-              TextInputWidget(
-                labelText: "Team Name",
-                hintText: "Enter your team's name here",
-                icon: Icons.group,
-                controller: _teamController,
-                maxCharLength: 8,
-                isMember: true,
-              ),
-              TextInputWidget(
-                labelText: "Password",
-                hintText: "Enter your password",
-                isPassword: true,
-                icon: Icons.password,
-                controller: _passwordController,
-              ),
-              Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.fromLTRB(0, 0, 25, 0),
-                child: TextLinkWidget(
-                  text: "Forgot Password?",
-                  onClick: () {
-                    FocusScope.of(context).unfocus();
-                    showModalBottomSheet(
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      context: context,
-                      builder: (context) => BackdropFilter(
-                        child: const ForgotPassword(),
-                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(
-                height: SizeHelper(context).height * 0.10,
-              ),
-              Container(
-                width: SizeHelper(context).width * 0.6,
-                padding: const EdgeInsets.all(25),
-                child: LoadingRoundedButton(
-                  text: "Login",
-                  buttonController: _buttonController,
-                  onClick: () async {
-                    String loginResult = await AuthenticationService.login(
-                      _teamController.text.trim(),
-                      _passwordController.text,
-                    );
-                    if (loginResult == 'ok') {
-                      _buttonController.success();
-                      homeProvider.refreshHomeScreen();
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomeScreen(),
-                        ),
-                        (route) => false,
-                      );
-                    } else {
-                      _buttonController.reset();
-                      showDialog(
-                        context: context,
-                        builder: (context) => PopupAlert(
-                          bodyText: loginResult,
-                          onConfirm: () => Navigator.pop(context),
-                          buttonText: 'Try Again',
-                          cancelOrNo: false,
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
-                    "Don't have an account? ",
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                  TextLinkWidget(
-                    text: "Register now",
-                    onClick: () {
-                      FocusScope.of(context).unfocus();
-                      liquidNavProvider.liquidController.animateToPage(page: 1);
-                    },
+                  Image.asset(
+                    "assets/images/Frame 47.png",
+                    width: SizeHelper(context).width * 0.7,
                   ),
                 ],
               ),
-              SizedBox(
-                height: SizeHelper(context).height * 0.02,
-              ),
-              const ResetPrompt(),
-              SizedBox(
-                height: SizeHelper(context).height * 0.02,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      "assets/images/lets_register.png",
+                      width: SizeHelper(context).width * 0.7,
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    TextInputWidget(
+                      labelText: "Team Name",
+                      hintText: "Enter your team's name here",
+                      icon: Icons.group,
+                      controller: _teamController,
+                      maxCharLength: 8,
+                      isMember: true,
+                    ),
+                    TextInputWidget(
+                      labelText: "Password",
+                      hintText: "Enter your password",
+                      isPassword: true,
+                      icon: Icons.password,
+                      controller: _passwordController,
+                    ),
+                    Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.fromLTRB(0, 0, 25, 0),
+                      child: TextLinkWidget(
+                        text: "Forgot Password?",
+                        onClick: () {
+                          FocusScope.of(context).unfocus();
+                          showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            context: context,
+                            builder: (context) => BackdropFilter(
+                              child: const ForgotPassword(),
+                              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: SizeHelper(context).height * 0.01,
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(0, 25, 0, 25),
+                      child: LoadingRoundedButton(
+                        text: "Login",
+                        buttonController: _buttonController,
+                        onClick: () async {
+                          // String loginResult = await AuthenticationService.login(
+                          //   _teamController.text.trim(),
+                          //   _passwordController.text,
+                          // );
+                          // TODO: Add back auth lol
+                          String loginResult = 'ok';
+                          if (loginResult == 'ok') {
+                            _buttonController.success();
+                            homeProvider.refreshHomeScreen();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          } else {
+                            _buttonController.reset();
+                            showDialog(
+                              context: context,
+                              builder: (context) => PopupAlert(
+                                bodyText: loginResult,
+                                onConfirm: () => Navigator.pop(context),
+                                buttonText: 'Try Again',
+                                cancelOrNo: false,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    LoginPrompt(hasAccount: false, liquidNavProvider: liquidNavProvider),
+                    SizedBox(
+                      height: SizeHelper(context).height * 0.02,
+                    ),
+                    const ResetPrompt(),
+                    SizedBox(
+                      height: SizeHelper(context).height * 0.02,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

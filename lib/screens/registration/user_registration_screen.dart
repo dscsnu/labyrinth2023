@@ -31,91 +31,140 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
     var liquidNavProvider = Provider.of<NavigationProvider>(context);
     return SingleChildScrollView(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: SizeHelper(context).height * 0.1,
-          ),
-          const Text(
-            "Registration",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 35,
-            ),
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "Register with your SNIoE ID/personal mail",
-          ),
-          SizedBox(
-            height: SizeHelper(context).height * 0.05,
-          ),
-          TextInputWidget(
-            labelText: "Email ID",
-            hintText: "Enter a valid email ID here",
-            icon: Icons.alternate_email,
-            controller: _emailController,
-          ),
-          TextInputWidget(
-            labelText: "Password",
-            hintText: "Enter your password here",
-            isPassword: true,
-            icon: Icons.password,
-            controller: _passwordController,
-          ),
-          TextInputWidget(
-            labelText: "Confirm Password",
-            hintText: "Re-enter your password here",
-            isPassword: true,
-            icon: Icons.password,
-            controller: _confirmController,
-          ),
-          SizedBox(
-            height: SizeHelper(context).height * 0.01,
-          ),
-          Container(
-            width: SizeHelper(context).width * 0.6,
-            padding: const EdgeInsets.all(25),
-            child: LoadingRoundedButton(
-              text: "Next",
-              buttonController: _buttonController,
-              onClick: () {
-                String s = validate();
-                if (s == "ok") {
-                  AuthenticationService.email = _emailController.text.trim();
-                  AuthenticationService.password = _passwordController.text;
-
-                  _buttonController.success();
-                  liquidNavProvider.pageController.animateToPage(
-                    1,
-                    curve: Curves.decelerate,
-                    duration: const Duration(milliseconds: 700),
-                  );
-                  _buttonController.reset();
-                } else {
-                  _buttonController.reset();
-                  showDialog(
-                    context: context,
-                    builder: (context) => PopupAlert(
-                      bodyText: s,
-                      onConfirm: () => Navigator.pop(context),
-                      cancelOrNo: false,
-                      buttonText: 'Try Again',
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  liquidNavProvider.liquidController.animateToPage(page: 2);
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: const [
+                    SizedBox(width: 10),
+                    Icon(
+                      Icons.arrow_back, 
+                      color: Colors.white,
+                      size: 17,
                     ),
-                  );
-                }
-              },
+                    SizedBox(width: 5),
+                    Text(
+                      "Back",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Image.asset(
+                "assets/images/Frame 47.png",
+                width: SizeHelper(context).width * 0.7,
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Registration",
+                  style: TextStyle(
+                    fontFamily: "NeueMachina",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 35,
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  "Registration with your SNU Email down below",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextInputWidget(
+                  labelText: "Email ID",
+                  hintText: "Enter a valid email ID here",
+                  icon: Icons.alternate_email,
+                  controller: _emailController,
+                ),
+                TextInputWidget(
+                  labelText: "Password",
+                  hintText: "Enter your password here",
+                  isPassword: true,
+                  icon: Icons.password,
+                  controller: _passwordController,
+                ),
+                TextInputWidget(
+                  labelText: "Confirm Password",
+                  hintText: "Re-enter your password here",
+                  isPassword: true,
+                  icon: Icons.password,
+                  controller: _confirmController,
+                ),
+                SizedBox(
+                  height: SizeHelper(context).height * 0.01,
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  child: LoadingRoundedButton(
+                    text: "Next",
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                    buttonController: _buttonController,
+                    onClick: () {
+                      String s = validate();
+                      if (s == "ok") {
+                        AuthenticationService.email = _emailController.text.trim();
+                        AuthenticationService.password = _passwordController.text;
+
+                        _buttonController.success();
+                        liquidNavProvider.pageController.animateToPage(
+                          1,
+                          curve: Curves.decelerate,
+                          duration: const Duration(milliseconds: 700),
+                        );
+                        _buttonController.reset();
+                      } else {
+                        _buttonController.reset();
+                        showDialog(
+                          context: context,
+                          builder: (context) => PopupAlert(
+                            bodyText: s,
+                            onConfirm: () => Navigator.pop(context),
+                            cancelOrNo: false,
+                            buttonText: 'Try Again',
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(
+                  height: SizeHelper(context).height * 0.02,
+                ),
+                LoginPrompt(hasAccount: true, liquidNavProvider: liquidNavProvider),
+                SizedBox(
+                  height: SizeHelper(context).height * 0.017,
+                ),
+                const ResetPrompt(),
+                SizedBox(
+                  height: SizeHelper(context).height * 0.08,
+                ),
+              ],
             ),
-          ),
-          SizedBox(
-            height: SizeHelper(context).height * 0.02,
-          ),
-          LoginPrompt(liquidNavProvider: liquidNavProvider),
-          SizedBox(
-            height: SizeHelper(context).height * 0.017,
-          ),
-          const ResetPrompt(),
-          SizedBox(
-            height: SizeHelper(context).height * 0.08,
           ),
         ],
       ),

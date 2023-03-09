@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:labyrinth/global/widgets/circular_icon_button.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 import '../../../global/size_helper.dart';
@@ -29,24 +28,13 @@ class _ResetPasswordState extends State<ResetPassword> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              alignment: Alignment.centerRight,
-              child: CircularIconButton(
-                icon: Icons.keyboard_arrow_down,
-                onClick: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            Container(
-              height: SizeHelper(context).height * 0.025,
-            ),
             const Text(
               "Reset Password",
               style: TextStyle(
-                color: Colors.white,
+                fontFamily: "NeueMachina",
                 fontWeight: FontWeight.bold,
-                fontSize: 35,
+                color: Colors.black,
+                fontSize: 30,
               ),
             ),
             SizedBox(
@@ -59,6 +47,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               controller: _tokenController,
               maxCharLength: 6,
               isNumber: true,
+              backgroundBlack: false,
             ),
             TextInputWidget(
               labelText: "New password",
@@ -66,6 +55,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               icon: Icons.password,
               isPassword: true,
               controller: _passwordController,
+              backgroundBlack: false,
             ),
             TextInputWidget(
               labelText: "Confirm new password",
@@ -73,6 +63,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               isPassword: true,
               icon: Icons.password,
               controller: _confirmController,
+              backgroundBlack: false,
             ),
             SizedBox(
               height: SizeHelper(context).height * 0.02,

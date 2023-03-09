@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:labyrinth/global/size_helper.dart';
 
-import '../constants/colors.dart';
-import '../constants/values.dart';
 
 class BottomSheetLayout extends StatelessWidget {
   final Widget child;
@@ -14,17 +13,33 @@ class BottomSheetLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(15.0),
       padding: const EdgeInsets.all(15.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(kRoundedCornerValue),
-        gradient: kPurpleGradient,
-        border: Border.all(
-          color: kPrimaryOrange,
-          width: 2.0,
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(35),
+          topRight: Radius.circular(35),
         ),
+        color: Colors.white,
       ),
-      child: child,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+              height: 4,
+              width: SizeHelper(context).width * 0.3,
+              decoration: const BoxDecoration(
+                color: Color(0xFF121314),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+            ),
+            Container(
+              height: 40,
+            ),
+          child,
+        ],
+      ),
     );
   }
 }

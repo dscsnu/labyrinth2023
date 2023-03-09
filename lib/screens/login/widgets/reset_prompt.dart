@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:labyrinth/global/constants/colors.dart';
 
 import '../../../global/widgets/text_link_widget.dart';
 import 'reset_password.dart';
@@ -18,8 +19,8 @@ class ResetPrompt extends StatelessWidget {
         const Text(
           "Got a password reset token? ",
           style: TextStyle(
-            fontSize: 15.4,
-            color: Colors.white,
+            fontSize: 13,
+            color: kTextColor,
           ),
         ),
         TextLinkWidget(

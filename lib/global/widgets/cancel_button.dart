@@ -26,8 +26,8 @@ class CancelButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
-            gradient: kPurpleGradient,
-            border: Border.all(color: kPrimaryOrange),
+            color: Colors.white,
+            border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(kRoundedCornerValue),
           ),
           child: Row(
@@ -40,7 +40,7 @@ class CancelButton extends StatelessWidget {
                   fontSize: 18.0,
                   letterSpacing: 0.4,
                   fontWeight: FontWeight.bold,
-                  color: kPrimaryOrange,
+                  color: kPrimary,
                 ),
               ),
               SizedBox(width: (icon != null) ? 10 : 0),

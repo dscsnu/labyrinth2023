@@ -180,7 +180,7 @@ class _MemberRegistrationScreenState extends State<MemberRegistrationScreen>
                   },
                 ),
               ),
-              LoginPrompt(liquidNavProvider: liquidNavProvider),
+              LoginPrompt(hasAccount: true, liquidNavProvider: liquidNavProvider),
               SizedBox(
                 height: SizeHelper(context).height * 0.02,
               ),

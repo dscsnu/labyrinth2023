@@ -35,61 +35,30 @@ class _LandingScreenState extends State<LandingScreen> {
 
     return SafeArea(
       child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          alignment: Alignment.center,
-          children: [
-            Positioned(
-              top: SizeHelper(context).height * 0.2,
-              child: SizedBox(
-                width: SizeHelper(context).width * 0.5,
-                child: DelayedDisplay(
-                  fadingDuration: const Duration(milliseconds: 1500),
-                  child: Image.asset(
-                    'assets/images/labyrinth_text_logo.png',
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: SizeHelper(context).height * 0.05,
-              child: DelayedDisplay(
-                fadingDuration: const Duration(milliseconds: 1500),
-                child: LoadingRoundedButton(
-                    text: "GET STARTED",
-                    buttonController: buttonController,
-                    onClick: () {
-                      Future.delayed(
-                        const Duration(seconds: 1),
-                        () {
-                          buttonController.success();
-                          Future.delayed(
-                            const Duration(seconds: 1),
-                            () async {
-                              (await _checkLogin()) ?? false
-                                  ? Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          homeProvider.refreshHomeScreen();
-                                          return const HomeScreen();
-                                        },
-                                      ),
-                                      (route) => false,
-                                    )
-                                  : liquidNavProvider.liquidController
-                                      .animateToPage(
-                                      page: 1,
-                                      duration: 1000,
-                                    );
-                            },
-                          );
-                        },
-                      );
-                    }),
-              ),
-            ),
-          ],
+        body: GestureDetector(
+          onTap: () async {
+            (await _checkLogin()) ?? false
+                ? Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        homeProvider.refreshHomeScreen();
+                        return const HomeScreen();
+                      },
+                    ),
+                    (route) => false,
+                  )
+                : liquidNavProvider.liquidController
+                    .animateToPage(
+                    page: 1,
+                    duration: 1000,
+                  );
+          },
+          child: SizedBox(
+            // width: SizeHelper(context).width,
+            height: SizeHelper(context).height,
+            child: Image.asset("assets/images/splash.png"),
+          ),
         ),
       ),
     );

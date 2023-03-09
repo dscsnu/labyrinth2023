@@ -10,6 +10,7 @@ class TextInputWidget extends StatefulWidget {
   final TextEditingController? controller;
   final Function? onChanged;
   final int? maxCharLength;
+  final bool? backgroundBlack;
 
   const TextInputWidget({
     Key? key,
@@ -22,6 +23,7 @@ class TextInputWidget extends StatefulWidget {
     this.maxCharLength,
     this.isMember,
     this.isNumber,
+    this.backgroundBlack = true,
   }) : super(key: key);
 
   @override
@@ -42,100 +44,98 @@ class _TextInputWidgetState extends State<TextInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(25, 20, 25, 20),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
       child: Column(
         children: [
-          Row(
-            children: [
-              SizedBox(width: (widget.icon != null) ? 10 : 0),
-              (widget.icon != null)
-                  ? Container(
-                      child: Icon(
-                        widget.icon,
-                        size: 12.5,
-                      ),
-                      padding: const EdgeInsets.all(2.5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: kButtonGradient,
-                      ),
-                    )
-                  : const SizedBox(),
-              const SizedBox(width: 10),
-              Text(
-                widget.labelText,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     SizedBox(width: (widget.icon != null) ? 10 : 0),
+          //     (widget.icon != null)
+          //         ? Container(
+          //             child: Icon(
+          //               widget.icon,
+          //               size: 12.5,
+          //             ),
+          //             padding: const EdgeInsets.all(2.5),
+          //             decoration: BoxDecoration(
+          //               borderRadius: BorderRadius.circular(30),
+          //               gradient: kButtonGradient,
+          //             ),
+          //           )
+          //         : const SizedBox(),
+          //     const SizedBox(width: 10),
+          //     Text(
+          //       widget.labelText,
+          //       style: const TextStyle(
+          //         color: Colors.white,
+          //       ),
+          //     ),
+          //   ],
+          // ),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
+              color: (widget.backgroundBlack ?? true) ? const Color(0xFF313233) : Colors.white,
               borderRadius: BorderRadius.circular(13),
-              gradient: kButtonGradient,
+              border: Border.all(
+                color: (widget.backgroundBlack ?? true) ? Colors.white : const Color(0xFF313233),
+                width: 1,
+              ),
             ),
-            padding: const EdgeInsets.all(2),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(13),
-                color: kBackgroundColor,
+            padding: const EdgeInsets.fromLTRB(20, 5, 10, 5),
+            child: TextFormField(
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(widget.maxCharLength),
+              ],
+              textCapitalization: (widget.isMember ?? false)
+                  ? TextCapitalization.words
+                  : TextCapitalization.none,
+              controller: widget.controller,
+              onChanged: (String s) {
+                if (widget.onChanged != null) {
+                  widget.onChanged!(s);
+                }
+              },
+              style: const TextStyle(
+                color: kTextColor,
               ),
-              padding: const EdgeInsets.fromLTRB(20, 2, 10, 2),
-              child: TextFormField(
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(widget.maxCharLength),
-                ],
-                textCapitalization: (widget.isMember ?? false)
-                    ? TextCapitalization.words
-                    : TextCapitalization.none,
-                controller: widget.controller,
-                onChanged: (String s) {
-                  if (widget.onChanged != null) {
-                    widget.onChanged!(s);
-                  }
-                },
-                style: const TextStyle(
-                  color: Colors.white,
+              decoration: InputDecoration(
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(13.0),
                 ),
-                decoration: InputDecoration(
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(13.0),
-                  ),
-                  hintText: widget.hintText,
-                  hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
-                  ),
-                  suffixIcon: (widget.isPassword ?? false)
-                      ? IconButton(
-                          icon: Icon(
-                            _passwordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: kPrimaryOrange,
-                          ),
-                          onPressed: () {
-                            setState(
-                              () {
-                                _passwordVisible = !_passwordVisible;
-                              },
-                            );
-                          },
-                        )
-                      : const SizedBox(
-                          width: 0,
-                          height: 0,
+                hintText: widget.hintText,
+                hintStyle: TextStyle(
+                  color: (widget.backgroundBlack ?? true) ? kTextColor : Colors.black,
+                  fontSize: 14,
+                ),
+                suffixIcon: (widget.isPassword ?? false)
+                    ? IconButton(
+                        icon: Icon(
+                          _passwordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: const Color(0xFF757478),
                         ),
-                ),
-                obscureText: !_passwordVisible,
-                enableSuggestions: _passwordVisible,
-                autocorrect: _passwordVisible,
-                keyboardType: (widget.isNumber ?? false) ? TextInputType.number : TextInputType.text,
+                        onPressed: () {
+                          setState(
+                            () {
+                              _passwordVisible = !_passwordVisible;
+                            },
+                          );
+                        },
+                      )
+                    : const SizedBox(
+                        width: 0,
+                        height: 0,
+                      ),
               ),
+              obscureText: !_passwordVisible,
+              enableSuggestions: _passwordVisible,
+              autocorrect: _passwordVisible,
+              keyboardType: (widget.isNumber ?? false) ? TextInputType.number : TextInputType.text,
             ),
           ),
         ],
