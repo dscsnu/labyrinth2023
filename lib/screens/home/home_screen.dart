@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
@@ -10,8 +9,8 @@ import 'package:labyrinth/global/constants/strings.dart';
 import 'package:labyrinth/global/constants/values.dart';
 import 'package:labyrinth/global/widgets/popup_alert.dart';
 import 'package:labyrinth/services/beacon_service.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../global/size_helper.dart';
@@ -31,9 +30,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final qrKey = GlobalKey(debugLabel: "QR");
-  QRViewController? controller;
+  MobileScannerController controller = MobileScannerController(
+    autoStart: true,
+  );
+  MobileScannerArguments? arguments;
   Barcode? barcode;
+  BarcodeCapture? capture;
   late HomeProvider homeProvider;
   bool qrVisible = true, flash = false, isChecking = false;
   late ConfettiController _controllerCenter;
@@ -43,30 +45,16 @@ class _HomeScreenState extends State<HomeScreen> {
   
   @override
   void dispose() {
-    controller?.dispose();
+    controller.dispose();
     _controllerCenter.dispose();
     super.dispose();
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
-
-    try {
-      if (Platform.isAndroid) {
-        controller?.pauseCamera();
-      }
-      controller?.resumeCamera();
-    } on Exception catch (e) {
-      debugPrint(e.toString());
-    }
   }
 
   @override
   void initState() {
     super.initState();
     _controllerCenter =
-        ConfettiController(duration: const Duration(seconds: 10));
+        ConfettiController(duration: const Duration(seconds: 10)); 
     
     countdown = Timer.periodic(
       const Duration(
@@ -80,6 +68,10 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.start();
+    });
   }
   
   format(Duration d) =>
@@ -90,10 +82,8 @@ class _HomeScreenState extends State<HomeScreen> {
     homeProvider = Provider.of<HomeProvider>(context);
     var connectivityProvider = Provider.of<ConnectivityProvider>(context);
     
-    // TODO: CHANGE BACK
-    // bool _eventStarted = DateTime.now().isAfter(homeProvider.startTime) &&
-    //     (DateTime.now().isBefore(homeProvider.endTime));
-    bool _eventStarted = true;
+    bool _eventStarted = DateTime.now().isAfter(homeProvider.startTime) &&
+        (DateTime.now().isBefore(homeProvider.endTime));
 
     _controllerCenter.play();
 
@@ -117,15 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            // TODO: Ask Keshav for refresh button
-                            // CircularIconButton(
-                            //   icon: Icons.refresh,
-                            //   size: 28,
-                            //   onClick: () {
-                            //     homeProvider.refreshHomeScreen();
-                            //   },
-                            // ),
-                            // SizedBox(width: SizeHelper(context).width * 0.025),
                             GestureDetector(
                               onTap: () {
                                 showModalBottomSheet(
@@ -133,7 +114,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                   backgroundColor: Colors.transparent,
                                   context: context,
                                   builder: (context) => BackdropFilter(
-                                    child: const RuleSheet(),
+                                    child: DraggableScrollableSheet(
+                                      expand: false,
+                                      initialChildSize: 0.8,
+                                      maxChildSize: 1,
+                                      snap: true,
+                                      snapSizes: const [0.8],
+                                      builder: (context, scrollController) {
+                                        return RuleSheet(
+                                          scrollController: scrollController,
+                                        );
+                                      }
+                                    ),
                                     filter:
                                         ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                                   ),
@@ -169,12 +161,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
+                            SizedBox(width: SizeHelper(context).width * 0.025),
+                            CircularIconButton(
+                              icon: Icons.refresh,
+                              size: 28,
+                              sleek: true,
+                              onClick: () {
+                                homeProvider.refreshHomeScreen();
+                              },
+                            ),
                           ],
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: SizeHelper(context).height * 0.2,
+                      bottom: SizeHelper(context).height * 0.25,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Padding(
@@ -316,74 +317,70 @@ class _HomeScreenState extends State<HomeScreen> {
                       alignment: Alignment.bottomCenter,
                       child: DraggableScrollableSheet(
                         expand: false,
-                        initialChildSize: 0.2,
-                        minChildSize: 0.2,
+                        initialChildSize: 0.25,
+                        minChildSize: 0.25,
                         maxChildSize: 0.8,
                         snap: true,
-                        snapSizes: const [0.2, 0.8],
+                        snapSizes: const [0.25, 0.8],
                         builder: (context, scrollController) => ClueDisplay(
                           scrollController: scrollController,
                         ),
                       ),
                     ),
-                                      
-                    qrVisible
-                        ? _eventStarted
-                            ? qrView(context)
-                            : const SizedBox()
-                        : const SizedBox(),
-                    qrVisible
-                        ? _eventStarted
-                            ? Positioned(
-                                bottom: SizeHelper(context).width * 0.1,
-                                left: SizeHelper(context).width * 0.1,
-                                child: CircularIconButton(
-                                  icon: (flash)
-                                      ? Icons.flash_on
-                                      : Icons.flash_off,
-                                  onClick: () async {
-                                    controller?.toggleFlash();
-                                    var temp =
-                                        await controller?.getFlashStatus();
-                                    setState(
-                                      () {
-                                        flash = temp!;
-                                      },
-                                    );
-                                  },
-                                ),
-                              )
-                            : const SizedBox()
-                        : const SizedBox(),
-                    qrVisible
-                        ? _eventStarted
-                            ? Positioned(
-                                bottom: SizeHelper(context).width * 0.1,
-                                right: SizeHelper(context).width * 0.1,
-                                child: CircularIconButton(
-                                  onClick: () async {
-                                    setState(
-                                      () {
-                                        qrVisible = false;
-                                      },
-                                    );
-                                  },
-                                ),
-                              )
-                            : const SizedBox()
-                        : qrVisible
-                            ? Positioned(
-                                bottom: SizeHelper(context).width * 0.1,
-                                right: SizeHelper(context).width * 0.1,
-                                child: CircularIconButton(
-                                  onClick: () => setState(
-                                    () {
-                                      qrVisible = false;
-                                    },
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(),
+                    
+                    Visibility(
+                      visible: qrVisible && _eventStarted,
+                      maintainState: true,
+                      child: Container(
+                        color: Colors.black.withOpacity(0.8),
+                        child: qrView(context),
+                      ),
+                    ),
+                    
+                    Positioned(
+                      bottom: SizeHelper(context).width * 0.1,
+                      left: SizeHelper(context).width * 0.1,
+                      child: Visibility(
+                        visible: qrVisible && _eventStarted,
+                        maintainState: true,
+                        child: CircularIconButton(
+                          iconWidget: ValueListenableBuilder(
+                            valueListenable: controller.torchState,
+                            builder: (context, state, child) {
+                              switch (state as TorchState) {
+                                case TorchState.off:
+                                  return const Icon(Icons.flash_off, color: kPrimary, size: 25,);
+                                case TorchState.on:
+                                  return const Icon(Icons.flash_on, color: kPrimary, size: 25,);
+                              }
+                            },
+                          ),
+                          onClick: () async {
+                            controller.toggleTorch();
+                          },
+                        ),
+                      ),
+                    ),
+                    
+                    Positioned(
+                      bottom: SizeHelper(context).width * 0.1,
+                      right: SizeHelper(context).width * 0.1,
+                      child: Visibility(
+                        visible: qrVisible && _eventStarted,
+                        maintainState: true,
+                        child: CircularIconButton(
+                          onClick: () async {
+                            setState(
+                              () {
+                                // controller?.pauseCamera();
+                                qrVisible = false;
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    
                     (homeProvider.cluesCollected.length == 10)
                         ? Align(
                             alignment: Alignment.center,
@@ -411,45 +408,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget qrView(BuildContext context) => Container(
         color: const Color(0x000223bf),
-        child: QRView(
-          key: qrKey,
-          overlay: QrScannerOverlayShape(
-            borderColor: kPrimary,
-            borderRadius: kRoundedCornerValue,
-            borderWidth: 10,
-          ),
-          onQRViewCreated: (QRViewController controller) {
-            setState(
-              () {
-                this.controller = controller;
+        child: Stack(
+          children: [
+            MobileScanner(
+              fit: BoxFit.contain,
+              scanWindow: Rect.fromCenter(
+                center: MediaQuery.of(context).size.center(Offset.zero),
+                width: SizeHelper(context).width * 0.8,
+                height: SizeHelper(context).width * 0.8,
+              ),
+              controller: controller,
+              onScannerStarted: (arguments) {
+                setState(() {
+                  this.arguments = arguments;
+                });
               },
-            );
-            controller.scannedDataStream.listen(
-              (barcode) {
-                this.barcode = barcode;
+              onDetect: (capture) {
+                final List<Barcode> barcodes = capture.barcodes;
+                capture = capture;
+                barcode = barcodes[0];
                 if (qrVisible) {
                   setState(
                     () {
+                      // controller.pauseCamera();
                       qrVisible = false;
                     },
                   );
                   checkCode();
                 }
               },
-            );
-          },
+            ),
+            CustomPaint(
+              painter: ScannerOverlay(Rect.fromCenter(
+                center: MediaQuery.of(context).size.center(Offset.zero),
+                width: SizeHelper(context).width * 0.8,
+                height: SizeHelper(context).width * 0.8,
+              )),
+            ),
+            Container(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: SizeHelper(context).width * 0.8,
+                height: SizeHelper(context).width * 0.8,
+                child: CustomPaint(
+                  foregroundPainter: BorderPainter(),
+                ),
+              ),
+            ),
+          ],
         ),
       );
 
   Future<void> checkCode() async {
     String toCheck;
     try {
-      final uri = Uri.parse(barcode?.code ?? '');
+      final uri = Uri.parse(barcode?.rawValue ?? '');
       toCheck = uri.queryParameters['__lr_key'] ?? '';
     } catch (e) {
       toCheck = '';
     }
-    print(toCheck);
     var result = await BeaconService.scanIsValid(toCheck);
     showDialog(
       context: context,
@@ -472,6 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
             setState(
               () {
+                // controller?.pauseCamera();
                 qrVisible = false;
               },
             );
@@ -483,5 +501,71 @@ class _HomeScreenState extends State<HomeScreen> {
         cancelOrNo: false,
       ),
     );
+  }
+}
+
+class BorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double sh = size.height; // for convenient shortage
+    double sw = size.width; // for convenient shortage
+    double cornerSide = sh * 0.15; // desirable value for corners side
+
+    Paint paint = Paint()
+      ..color = kPrimary
+      ..strokeWidth = 7
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    Path path = Path()
+      ..moveTo(cornerSide, 0)
+      ..lineTo(0, 0)
+      ..lineTo(0, cornerSide)
+      ..moveTo(0, sh - cornerSide)
+      ..lineTo(0, sh)
+      ..lineTo(cornerSide, sh)
+      ..moveTo(sw - cornerSide, sh)
+      ..lineTo(sw, sh)
+      ..lineTo(sw, sh - cornerSide)
+      ..moveTo(sw, cornerSide)
+      ..lineTo(sw, 0)
+      ..lineTo(sw - cornerSide, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(BorderPainter oldDelegate) => false;
+
+  @override
+  bool shouldRebuildSemantics(BorderPainter oldDelegate) => false;
+}
+
+class ScannerOverlay extends CustomPainter {
+  ScannerOverlay(this.scanWindow);
+
+  final Rect scanWindow;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final backgroundPath = Path()..addRect(Rect.largest);
+    final cutoutPath = Path()..addRect(scanWindow);
+
+    final backgroundPaint = Paint()
+      ..color = Colors.black.withOpacity(0.5)
+      ..style = PaintingStyle.fill
+      ..blendMode = BlendMode.dstOut;
+
+    final backgroundWithCutout = Path.combine(
+      PathOperation.difference,
+      backgroundPath,
+      cutoutPath,
+    );
+    canvas.drawPath(backgroundWithCutout, backgroundPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

@@ -7,13 +7,15 @@ import '../constants/values.dart';
 class CircularIconButton extends StatelessWidget {
   final Function onClick;
   final IconData? icon;
-  final bool? withBorder;
+  final Widget? iconWidget;
+  final bool? sleek;
   final double? size;
   const CircularIconButton({
     Key? key,
     this.icon,
+    this.iconWidget,
     required this.onClick,
-    this.withBorder,
+    this.sleek,
     this.size
   }) : super(key: key);
 
@@ -26,15 +28,16 @@ class CircularIconButton extends StatelessWidget {
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
+            color: (sleek ?? false) ? kBackgroundColor : Colors.transparent,
             borderRadius: BorderRadius.circular(kRoundedCornerValue),
             border: Border.all(
-              width: (withBorder ?? true) ? 2 : 0,
-              color: kPrimary
+              width: (sleek ?? false) ? 1 : 2,
+              color: kPrimary.withOpacity((sleek ?? false) ? 0.6 : 1)
             ),
           ),
-          child: Icon(
+          child: iconWidget ?? Icon(
             icon ?? Icons.close,
-            color: kPrimary,
+            color: kPrimary.withOpacity((sleek ?? false) ? 0.6 : 1),
             size: 25,
           ),
         ),

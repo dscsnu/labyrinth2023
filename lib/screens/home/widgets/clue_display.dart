@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:labyrinth/global/constants/values.dart';
 import 'package:provider/provider.dart';
 
-import '../../../global/constants/colors.dart';
 import '../../../global/size_helper.dart';
 import '../../../global/widgets/popup_alert.dart';
 import '../../../providers/home_provider.dart';
@@ -20,8 +20,6 @@ class ClueDisplay extends StatefulWidget {
 }
 
 class _ClueDisplayState extends State<ClueDisplay> {
-  bool showHint = false;
-
   @override
   Widget build(BuildContext context) {
     var homeProvider = Provider.of<HomeProvider>(context);
@@ -90,111 +88,95 @@ class _ClueDisplayState extends State<ClueDisplay> {
                           ),
                         );
                       }
-                      setState(
-                        () {
-                          showHint = !showHint;
-                        },
-                      );
                     });
                   },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Stuck? Use a hint (" +
-                            homeProvider.hintsLeft.toString() +
-                            ")",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.bold,
-                          height: 1.65,
-                          color: Colors.white.withOpacity(0.5),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(kRoundedCornerValue),
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 1,
                         ),
                       ),
-                      SizedBox(
-                        width: SizeHelper(context).width * 0.025,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.lightbulb_outline,
+                          ),
+                          Text(
+                            "Hint (" +
+                                homeProvider.hintsLeft.toString() +
+                                ")",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.bold,
+                              height: 1.65,
+                            ),
+                          ),
+                          SizedBox(
+                            width: SizeHelper(context).width * 0.025,
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_sharp,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                      Icon(
-                        Icons.lightbulb_outline,
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                    ],
+                    ),
                   ),
                 )
               : const SizedBox(),
           (homeProvider.selectedClue.hint != "" &&
                   homeProvider.selectedClue.clueEasy ==
                       homeProvider.latestClue)
-              ? GestureDetector(
-                  onTap: () async {
-                    setState(
-                      () {
-                        showHint = !showHint;
-                      },
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "HINT",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.bold,
+              ? Container(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(kRoundedCornerValue),
+                  border: Border.all(
+                    color: Colors.black,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.lightbulb_outline,
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: ShaderMask(
-                          blendMode: BlendMode.srcATop,
-                          shaderCallback: (Rect bounds) {
-                            return const LinearGradient(
-                              colors: <Color>[
-                                kPrimary,
-                              ],
-                              tileMode: TileMode.repeated,
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ).createShader(bounds);
-                          },
-                          child: Icon(
-                            (showHint)
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
-                            size: 35.0,
+                        Text(
+                          "Hint (" +
+                              homeProvider.hintsLeft.toString() +
+                              ")",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 17.0,
+                            fontWeight: FontWeight.bold,
+                            height: 1.65,
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 10,),
+                    Text(
+                        homeProvider.selectedClue.hint,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 17.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ],
-                  ),
-                )
-              : const SizedBox(),
-          SizedBox(
-            height: SizeHelper(context).height * 0.005,
-          ),
-          (homeProvider.selectedClue.hint != "" &&
-                  showHint &&
-                  homeProvider.selectedClue.clueEasy ==
-                      homeProvider.latestClue)
-              ? Text(
-                  homeProvider.selectedClue.hint,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 17.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              : const SizedBox(),
-          (homeProvider.selectedClue.hint != "" &&
-                  showHint &&
-                  homeProvider.selectedClue.clueEasy ==
-                      homeProvider.latestClue)
-              ? SizedBox(
-                  height: SizeHelper(context).height * 0.005,
-                )
+                  ],
+                ),
+              )
               : const SizedBox(),
         ],
       ),
