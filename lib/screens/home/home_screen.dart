@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:labyrinth/global/constants/colors.dart';
+import 'package:labyrinth/global/constants/strings.dart';
 import 'package:labyrinth/global/constants/values.dart';
+import 'package:labyrinth/global/widgets/popup_alert.dart';
+import 'package:labyrinth/services/beacon_service.dart';
 import 'package:provider/provider.dart';
-
-// import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../global/size_helper.dart';
 import '../../global/widgets/circular_icon_button.dart';
-import '../../global/widgets/popup_alert.dart';
 import '../../providers/connectivity_provider.dart';
 import '../../providers/home_provider.dart';
 import '../no_internet/no_internet_screen.dart';
@@ -29,18 +32,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final qrKey = GlobalKey(debugLabel: "QR");
-  // QRViewController? controller;
-  // Barcode? barcode;
+  QRViewController? controller;
+  Barcode? barcode;
   late HomeProvider homeProvider;
-  bool qrVisible = false, flash = false, isChecking = false;
+  bool qrVisible = true, flash = false, isChecking = false;
   late ConfettiController _controllerCenter;
   
   DateTime displayTime = DateTime.now();
   Timer? countdown;
-
+  
   @override
   void dispose() {
-    // controller?.dispose();
+    controller?.dispose();
     _controllerCenter.dispose();
     super.dispose();
   }
@@ -49,14 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void reassemble() {
     super.reassemble();
 
-  //   try {
-  //     if (Platform.isAndroid) {
-  //       controller?.pauseCamera();
-  //     }
-  //     controller?.resumeCamera();
-  //   } on Exception catch (e) {
-  //     debugPrint(e.toString());
-  //   }
+    try {
+      if (Platform.isAndroid) {
+        controller?.pauseCamera();
+      }
+      controller?.resumeCamera();
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   @override
@@ -64,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 10));
-        
+    
     countdown = Timer.periodic(
       const Duration(
         seconds: 1,
@@ -86,8 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     homeProvider = Provider.of<HomeProvider>(context);
     var connectivityProvider = Provider.of<ConnectivityProvider>(context);
-    bool _eventStarted = DateTime.now().isAfter(homeProvider.startTime) &&
-        (DateTime.now().isBefore(homeProvider.endTime));
+    
+    // TODO: CHANGE BACK
+    // bool _eventStarted = DateTime.now().isAfter(homeProvider.startTime) &&
+    //     (DateTime.now().isBefore(homeProvider.endTime));
+    bool _eventStarted = true;
 
     _controllerCenter.play();
 
@@ -177,6 +183,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               GestureDetector(
                                 onTap: () {
+                                  // HomeProvider().refreshHomeScreen();
+                                  setState(
+                                      () {
+                                        qrVisible = true;
+                                        _eventStarted = true;
+                                      },
+                                    );
                                   if (!_eventStarted) {
                                     showDialog(
                                       context: context,
@@ -329,14 +342,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? Icons.flash_on
                                       : Icons.flash_off,
                                   onClick: () async {
-                                    // controller?.toggleFlash();
-                                    // var temp =
-                                    //     await controller?.getFlashStatus();
-                                    // setState(
-                                    //   () {
-                                    //     flash = temp!;
-                                    //   },
-                                    // );
+                                    controller?.toggleFlash();
+                                    var temp =
+                                        await controller?.getFlashStatus();
+                                    setState(
+                                      () {
+                                        flash = temp!;
+                                      },
+                                    );
                                   },
                                 ),
                               )
@@ -398,76 +411,77 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget qrView(BuildContext context) => Container(
         color: const Color(0x000223bf),
-        // child: QRView(
-        //   key: qrKey,
-        //   overlay: QrScannerOverlayShape(
-        //     borderColor: kPrimaryOrange,
-        //     borderRadius: kRoundedCornerValue,
-        //     borderWidth: 10,
-        //   ),
-        //   onQRViewCreated: (QRViewController controller) {
-        //     setState(
-        //       () {
-        //         this.controller = controller;
-        //       },
-        //     );
-        //     controller.scannedDataStream.listen(
-        //       (barcode) {
-        //         this.barcode = barcode;
-        //         if (qrVisible) {
-        //           setState(
-        //             () {
-        //               qrVisible = false;
-        //             },
-        //           );
-        //           checkCode();
-        //         }
-        //       },
-        //     );
-        //   },
-        // ),
+        child: QRView(
+          key: qrKey,
+          overlay: QrScannerOverlayShape(
+            borderColor: kPrimary,
+            borderRadius: kRoundedCornerValue,
+            borderWidth: 10,
+          ),
+          onQRViewCreated: (QRViewController controller) {
+            setState(
+              () {
+                this.controller = controller;
+              },
+            );
+            controller.scannedDataStream.listen(
+              (barcode) {
+                this.barcode = barcode;
+                if (qrVisible) {
+                  setState(
+                    () {
+                      qrVisible = false;
+                    },
+                  );
+                  checkCode();
+                }
+              },
+            );
+          },
+        ),
       );
 
-  // Future<void> checkCode() async {
-  //   String toCheck;
-  //   try {
-  //     final uri = Uri.parse(barcode?.code ?? '');
-  //     toCheck = uri.queryParameters['__lr_key'] ?? '';
-  //   } catch (e) {
-  //     toCheck = '';
-  //   }
-  //   var result = await BeaconService.scanIsValid(toCheck);
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => PopupAlert(
-  //       bodyText: 'Let\'s see if you got it right :)',
-  //       onConfirm: () async {
-  //         Navigator.pop(context);
-  //         homeProvider.refreshHomeScreen();
-  //         if (result) {
-  //           showDialog(
-  //             context: context,
-  //             builder: (context) => PopupAlert(
-  //               bodyText: 'Good job! You got this one',
-  //               onConfirm: () async {
-  //                 Navigator.pop(context);
-  //               },
-  //               buttonText: 'Proceed',
-  //               cancelOrNo: false,
-  //             ),
-  //           );
-  //           setState(
-  //             () {
-  //               qrVisible = false;
-  //             },
-  //           );
-  //         } else {
-  //           await launch(rickrollUrl);
-  //         }
-  //       },
-  //       buttonText: 'Check',
-  //       cancelOrNo: false,
-  //     ),
-  //   );
-  // }
+  Future<void> checkCode() async {
+    String toCheck;
+    try {
+      final uri = Uri.parse(barcode?.code ?? '');
+      toCheck = uri.queryParameters['__lr_key'] ?? '';
+    } catch (e) {
+      toCheck = '';
+    }
+    print(toCheck);
+    var result = await BeaconService.scanIsValid(toCheck);
+    showDialog(
+      context: context,
+      builder: (context) => PopupAlert(
+        bodyText: 'Let\'s see if you got it right :)',
+        onConfirm: () async {
+          Navigator.pop(context);
+          homeProvider.refreshHomeScreen();
+          if (result) {
+            showDialog(
+              context: context,
+              builder: (context) => PopupAlert(
+                bodyText: 'Good job! You got this one',
+                onConfirm: () async {
+                  Navigator.pop(context);
+                },
+                buttonText: 'Proceed',
+                cancelOrNo: false,
+              ),
+            );
+            setState(
+              () {
+                qrVisible = false;
+              },
+            );
+          } else {
+            await launch(rickrollUrl);
+          }
+        },
+        buttonText: 'Check',
+        cancelOrNo: false,
+      ),
+    );
+  }
 }

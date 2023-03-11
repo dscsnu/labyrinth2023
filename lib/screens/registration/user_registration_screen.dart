@@ -125,30 +125,16 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
                     icon: const Icon(Icons.arrow_forward, color: Colors.black),
                     buttonController: _buttonController,
                     onClick: () {
-                      String s = validate();
-                      if (s == "ok") {
-                        AuthenticationService.email = _emailController.text.trim();
-                        AuthenticationService.password = _passwordController.text;
+                      AuthenticationService.email = _emailController.text.trim();
+                      AuthenticationService.password = _passwordController.text;
 
-                        _buttonController.success();
-                        liquidNavProvider.pageController.animateToPage(
-                          1,
-                          curve: Curves.decelerate,
-                          duration: const Duration(milliseconds: 700),
-                        );
-                        _buttonController.reset();
-                      } else {
-                        _buttonController.reset();
-                        showDialog(
-                          context: context,
-                          builder: (context) => PopupAlert(
-                            bodyText: s,
-                            onConfirm: () => Navigator.pop(context),
-                            cancelOrNo: false,
-                            buttonText: 'Try Again',
-                          ),
-                        );
-                      }
+                      _buttonController.success();
+                      liquidNavProvider.pageController.animateToPage(
+                        1,
+                        curve: Curves.decelerate,
+                        duration: const Duration(milliseconds: 700),
+                      );
+                      _buttonController.reset();
                     },
                   ),
                 ),
@@ -173,17 +159,4 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen>
 
   @override
   bool get wantKeepAlive => true;
-
-  String validate() {
-    var regex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-
-    if(_emailController.text.isEmpty || !regex.hasMatch(_emailController.text)){
-      return "Email is invalid";
-    } else if(_passwordController.text.isEmpty || _passwordController.text.length < 6) {
-      return "Password is invalid. Must contain at least 5 characters";
-    } else if(_passwordController.text != _confirmController.text) {
-      return "Password does not match";
-    }
-    return "ok";
-  }
 }

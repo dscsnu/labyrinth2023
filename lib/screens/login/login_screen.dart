@@ -110,12 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: "Login",
                         buttonController: _buttonController,
                         onClick: () async {
-                          // String loginResult = await AuthenticationService.login(
-                          //   _teamController.text.trim(),
-                          //   _passwordController.text,
-                          // );
-                          // TODO: Add back auth lol
-                          String loginResult = 'ok';
+                          String loginResult = await AuthenticationService.login(
+                            _teamController.text.trim(),
+                            _passwordController.text,
+                          );
                           if (loginResult == 'ok') {
                             _buttonController.success();
                             homeProvider.refreshHomeScreen();

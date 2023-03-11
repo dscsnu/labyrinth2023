@@ -1,16 +1,12 @@
-import 'dart:async';
-
-import 'package:delayed_display/delayed_display.dart';
 import 'package:flutter/material.dart';
+import 'package:labyrinth/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../global/size_helper.dart';
-import '../../global/widgets/rounded_loading_button.dart';
 import '../../providers/home_provider.dart';
 import '../../providers/navigation_provider.dart';
-import '../home/home_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({
